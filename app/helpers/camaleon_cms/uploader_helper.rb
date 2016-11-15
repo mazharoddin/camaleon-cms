@@ -38,7 +38,7 @@ module CamaleonCms::UploaderHelper
         formats: "*",
         generate_thumb: true,
         temporal_time: 0,
-        filename: ((cached_name || uploaded_io.original_filename) rescue uploaded_io.path.split("/").last).parameterize(".").downcase.gsub(" ", "-"),
+        filename: ((cached_name || uploaded_io.original_filename) rescue uploaded_io.path.split("/").last).cama_fix_filename,
         file_size: File.size(uploaded_io.to_io),
         remove_source: false,
         same_name: false,
@@ -57,7 +57,7 @@ module CamaleonCms::UploaderHelper
       return res
     end
     # save file
-    key = File.join(settings[:folder], settings[:filename]).to_s.gsub(/(\/){2,}/, "/")
+    key = File.join(settings[:folder], settings[:filename]).to_s.cama_fix_slash
     res = cama_uploader.add_file(uploaded_io, key, {same_name: settings[:same_name]})
     {} if settings[:temporal_time] > 0 # temporal file upload (always put as local for temporal files) (TODO: use delayjob)
 
@@ -244,7 +244,20 @@ module CamaleonCms::UploaderHelper
   def cama_uploader
     @cama_uploader ||= lambda{
       thumb = current_site.get_option('filesystem_thumb_size', '100x100').split('x')
-      args={ server: current_site.get_option("filesystem_type", "local").downcase, thumb: {w: thumb[0], h: thumb[1]}, aws_settings: {region: current_site.get_option("filesystem_region", 'us-west-2'), access_key: current_site.get_option("filesystem_s3_access_key"), secret_key: current_site.get_option("filesystem_s3_secret_key"), bucket: current_site.get_option("filesystem_s3_bucket_name"), cloud_front: current_site.get_option("filesystem_s3_cloudfront")}}; hooks_run("on_uploader", args)
+      args= {
+        server: current_site.get_option("filesystem_type", "local").downcase,
+        thumb: {w: thumb[0], h: thumb[1]},
+        aws_settings: {
+          region: current_site.get_option("filesystem_region", 'us-west-2'),
+          access_key: current_site.get_option("filesystem_s3_access_key"),
+          secret_key: current_site.get_option("filesystem_s3_secret_key"),
+          bucket: current_site.get_option("filesystem_s3_bucket_name"),
+          cloud_front: current_site.get_option("filesystem_s3_cloudfront"),
+          aws_file_upload_settings: lambda{|settings| settings }, # permit to add your custom attributes for file_upload http://docs.aws.amazon.com/sdkforruby/api/Aws/S3/Object.html#upload_file-instance_method
+          aws_file_read_settings: lambda{|data, s3_file| data } # permit to read custom attributes from aws file and add to file parsed object
+        }
+      }
+      hooks_run("on_uploader", args)
       case args[:server]
         when 's3', 'aws'
           CamaleonCmsAwsUploader.new({current_site: current_site, thumb: args[:thumb], aws_settings: args[:aws_settings]})
