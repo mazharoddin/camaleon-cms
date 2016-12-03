@@ -301,6 +301,9 @@ window["cama_init_media"] = (media_panel) ->
 
             unless r
               label.html(Math.round(e.width) + " x "+Math.round(e.height))
+          , built: ()->
+            if modal.find('.cropper-canvas img').attr('crossorigin')
+              modal.find('.modal-body').html('<div class="alert alert-danger">'+I18n('msg.cors_error', 'Please verify the following: <ul><li>If the image exist: %{url_img}</li> <li>Check if cors configuration are defined well, only for external images: S3, cloudfront(if you are using cloudfront).</li></ul><br> More information about CORS: <a href="%{url_blog}" target="_blank">here.</a>', {url_img: data['url'], url_blog: 'http://blog.celingest.com/en/2014/10/02/tutorial-using-cors-with-cloudfront-and-s3/'})+'</div>')
           }
 
           if media_panel.attr("data-dimension") # TODO: control dimensions
@@ -375,6 +378,15 @@ $ ->
   # private: (boolean) if true => browser private files that are not possible access by public url
   $.fn.upload_filemanager = (args)->
     args = args || {}
+    if args["formats"] == 'null'
+      args["formats"] = ''
+    if args["dimension"] == 'null'
+      args["dimension"] = ''
+    if args["versions"] == 'null'
+      args["versions"] = ''
+    if args["thumb_size"] == 'null'
+      args["thumb_size"] = ''
+
     open_modal({title: args["title"] || I18n("msg.media_title"), id: 'cama_modal_file_uploader', modal_size: "modal-lg", mode: "ajax", url: root_admin_url+"/media/ajax", ajax_params: {media_formats: args["formats"], dimension: args["dimension"], versions: args["versions"], thumb_size: args["thumb_size"], private: args['private'] }, callback: (modal)->
       if args["selected"]
         window["callback_media_uploader"] = args["selected"]
