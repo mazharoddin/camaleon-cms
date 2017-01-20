@@ -95,8 +95,9 @@ module CamaleonCms::CustomFieldsRead extend ActiveSupport::Concern
     field_values.where(custom_field_slug: field_keys).order(group_number: :asc).group_by(&:group_number).each do |group_number, group_fields|
       group = {}
       field_keys.each do |field_key|
-        group[field_key] = []
-        group_fields.each{ |field| group[field_key] << field.value if field_key == field.custom_field_slug }
+        _tmp = []
+        group_fields.each{ |field| _tmp << field.value if field_key == field.custom_field_slug }
+        group[field_key] = _tmp if _tmp.present?
       end
       res << group
     end
@@ -122,7 +123,7 @@ module CamaleonCms::CustomFieldsRead extend ActiveSupport::Concern
   # deprecated f attribute
   def get_fields_object(f=true)
     fields = {}
-    self.field_values.to_a.uniq.each do |field_value|
+    self.field_values.eager_load(:custom_fields).to_a.uniq.each do |field_value|
       custom_field = field_value.custom_fields
       # if custom_field.options[:show_frontend].to_s.to_bool
       values = custom_field.values.where(objectid: self.id).pluck(:value)

@@ -4,8 +4,8 @@
     <h1>(<%= @posts.total_entries %>) <%= ct('search_msg')%> <%= params[:q] %></h1>
     <div class="row">
         <% @posts.each_with_index do |post, index| %>
-            <%= raw "<div class='clearfix'></div>" if index%3 == 0 && index > 0 %>
-            <%= render partial: 'partials/post_list_item', locals: {post: post.decorate} %>
+            <%#= raw "<div class='clearfix'></div>" if index%3 == 0 && index > 0 %>
+            <%= render partial: 'partials/post_list_item', locals: {post: post.decorate, index: index} %>
         <% end %>
     </div>
     <%= content_tag("div", raw(ct('no_contents_found', default: 'No contents found')), class: "alert alert-warning") if @posts.empty? %>
