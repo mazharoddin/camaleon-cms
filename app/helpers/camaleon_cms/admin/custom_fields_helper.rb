@@ -31,7 +31,8 @@ module CamaleonCms::Admin::CustomFieldsHelper
         label: t('camaleon_cms.admin.custom_field.fields.select'),
         options: {
             required: true,
-            multiple: false,
+            multiple: true,
+            translate: true,
             multiple_options: {
                 label: t('camaleon_cms.admin.settings.options_select'),
                 default: 'radio'
@@ -232,6 +233,7 @@ module CamaleonCms::Admin::CustomFieldsHelper
         options: {
             required: true,
             multiple: true,
+            translate: true,
             default_value: '',
             show_frontend: true
         }
@@ -272,6 +274,25 @@ module CamaleonCms::Admin::CustomFieldsHelper
             }
         ]
     }
+
+    items[:post_types] = {
+        key: 'post_types',
+        label: t('camaleon_cms.admin.post_type.post_types'),
+        options: {
+            required: true,
+            multiple: true
+        }
+    }
+
+    items[:categories] = {
+        key: 'categories',
+        label: t('camaleon_cms.admin.table.categories'),
+        options: {
+            required: true,
+            multiple: true
+        }
+    }
+    
     # evaluate the content of command value on listing
     # sample command: options_from_collection_for_select(current_site.the_posts("commerce").decorate, :id, :the_title)
     items[:select_eval] = {
